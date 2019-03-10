@@ -5,39 +5,71 @@ const bot = new Eris(process.env.TOKEN);
 
 const languageList = require('./discord-langs.json');
 const demoTextPath = './node_modules/highlight.js/test/detect/';
+const languages = new Map();
+const aliases = new Map([['js', 'javascript']]);
+
+console.log('Processing languages...');
+let count = 0;
+for(let lang of languageList) {
+    count++;
+    // console.log('processing', lang, `(${count} of ${languageList.length})`);
+    let demoText;
+    try {
+        demoText = fs.readFileSync(demoTextPath + lang + '/default.txt', 'utf8');
+    } catch(e) {
+        if(!aliases.has(lang)) console.log(`Demo text for "${lang}" not found`)
+    }
+    if(demoText) {
+        languages.set(lang, demoText)
+    }
+}
 
 bot.on('ready', () => {
-    console.log('Ready to test', languageList.length, 'languages');
+    console.log('Ready to test', languages.size, 'languages');
 });
 
 bot.on('messageCreate', async msg => {
-    if(msg.content !== '`syntax_test`') return;
-    let response = '';
-    let count = 0;
-    for(let lang of languageList) {
-        count++;
-        console.log('processing', lang, `(${count} of ${languageList.length})`);
-        let demoText;
-        try {
-            demoText = fs.readFileSync(demoTextPath + lang + '/default.txt', 'utf8');
-        } catch(e) {
-            console.log(`Demo text for "${lang}" not found`)
-        }
-        if(demoText) {
-            let addedText = '```' + lang + '\n' + demoText.substring(0, 1950) + '\n```';
-            if(response.length + addedText.length > 1950) {
-                await sendMessage(msg.channel, response);
-                await sleep(1000);
-                response = addedText;
+    if(msg.content === '!syntax_list') {
+        let list = '```\n' + Array.from(languages.keys()).join(' ') + '```';
+        return sendMessage(msg.channel, `Listing \`${languages.size}\` languages:\n${list}`);
+    }
+    let match = msg.content && msg.content.match(/!syntax_test ?(.+)?/);
+    if(match) {
+        if(match[1]) {
+            let targetLang = aliases.get(match[1]) ||  match[1];
+            if(languages.has(targetLang)) {
+                return sendMessage(msg.channel, makeCodeBlock(targetLang));
             } else {
-                response += '\n' + addedText;
+                return sendMessage(msg.channel, `Invalid language \`${match[1]}\``)
             }
+        } else {
+            await sendMessage(msg.channel, `Beginning output test of \`${languages.size}\` languages`);
+            await sleep(2000);
+        }
+    } else {
+        return;
+    }
+    let response = '';
+    for(let [name] of languages) {
+        let addedText = makeCodeBlock(name);
+        if(response.length + addedText.length > 1950) {
+            await sendMessage(msg.channel, response);
+            await sleep(1000);
+            response = addedText;
+        } else {
+            response += '\n' + addedText;
         }
     }
     await sendMessage(msg.channel, response);
+    await sendMessage(msg.channel, `Test complete`);
 });
 
-function sendMessage(channel, msg) {
+function makeCodeBlock(lang) {
+    let demoText = languages.get(lang).substring(0, 1000);
+    return `\`${lang}\`\n\`\`\`${lang}\n${demoText}\`\`\``
+}
+
+function sendMessage(channel, msg) { // Allows ignoring errors while using await
     return new Promise((resolve, reject) => {
         channel.createMessage(msg).then(res => {
             resolve(res);

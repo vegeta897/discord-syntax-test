@@ -9,7 +9,6 @@
   "cpp",
   "arduino",
   "armasm",
-  "xml",
   "asciidoc",
   "aspectj",
   "autohotkey",
@@ -82,6 +81,7 @@
   "irpf90",
   "java",
   "javascript",
+  "js",
   "jboss-cli",
   "json",
   "julia",
@@ -171,6 +171,7 @@
   "vim",
   "x86asm",
   "xl",
+  "xml",
   "xquery",
   "zephir"
 ]
