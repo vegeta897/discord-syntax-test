@@ -16,6 +16,7 @@ Finally `npm start`
 ## Usage
 
 `!syntax_test` - Test all languages (takes a while)  
+`!syntax_stop` - Abort a test in progress  
 `!syntax_test js` - Test a specific language  
 `!syntax_list` - List all available languages
 

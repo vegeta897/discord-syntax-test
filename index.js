@@ -28,11 +28,18 @@ bot.on('ready', () => {
     console.log('Ready to test', languages.size, 'languages');
 });
 
+let running = false;
+
 bot.on('messageCreate', async msg => {
+    if(running && msg.content === '!syntax_stop') {
+        running = false;
+        return sendMessage(msg.channel, `Language testing aborted`);
+    }
     if(msg.content === '!syntax_list') {
         let list = '```\n' + Array.from(languages.keys()).join(' ') + '```';
         return sendMessage(msg.channel, `Listing \`${languages.size}\` languages:\n${list}`);
     }
+    if(running) return;
     let match = msg.content && msg.content.match(/!syntax_test ?(.+)?/);
     if(match) {
         if(match[1]) {
@@ -49,8 +56,10 @@ bot.on('messageCreate', async msg => {
     } else {
         return;
     }
+    running = true;
     let response = '';
     for(let [name] of languages) {
+        if(!running) return;
         let addedText = makeCodeBlock(name);
         if(response.length + addedText.length > 1950) {
             await sendMessage(msg.channel, response);
@@ -62,6 +71,7 @@ bot.on('messageCreate', async msg => {
     }
     await sendMessage(msg.channel, response);
     await sendMessage(msg.channel, `Test complete`);
+    running = false;
 });
 
 function makeCodeBlock(lang) {
