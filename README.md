@@ -7,8 +7,11 @@ Automated testing of all syntax highlighting languages for code blocks in Discor
 git clone https://github.com/vegeta897/discord-syntax-test.git
 cd discord-syntax-test
 npm install
-npm start
 ```
+
+Set `TOKEN` env variable, or create a `.env` file with `TOKEN="your_token"`
+
+Finally `npm start`
 
 ## Usage
 

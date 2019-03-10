@@ -1,6 +1,6 @@
 {
   "name": "discord-syntax-test",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automated testing of all syntax highlighting languages for code blocks in Discord",
   "main": "index.js",
   "scripts": {
