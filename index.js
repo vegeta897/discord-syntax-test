@@ -3,24 +3,31 @@ const fs = require('fs');
 const Eris = require('eris');
 const bot = new Eris(process.env.TOKEN);
 
-const languageList = require('./discord-langs.json');
 const demoTextPath = './node_modules/highlight.js/test/detect/';
+const sourceFilePath = './node_modules/highlight.js/src/languages/';
 const languages = new Map();
-const aliases = new Map([['js', 'javascript']]);
+const aliases = new Map();
+const blacklist = ['angelscript','arcade','gml','isbl','julia-repl','pgsql','plaintext','properties','reasonml','routeros','sas'];
 
 console.log('Processing languages...');
-let count = 0;
-for(let lang of languageList) {
-    count++;
-    // console.log('processing', lang, `(${count} of ${languageList.length})`);
-    let demoText;
+for(let fileName of fs.readdirSync(sourceFilePath).map(sf => sf)) {
+    let lang = fileName.match(/^(.+)\.js$/i)[1];
+    if(blacklist.includes(lang)) continue;
+    let code, demoText;
     try {
+        code = fs.readFileSync(sourceFilePath + fileName, 'utf8');
         demoText = fs.readFileSync(demoTextPath + lang + '/default.txt', 'utf8');
-    } catch(e) {
-        if(!aliases.has(lang)) console.log(`Demo text for "${lang}" not found`)
-    }
-    if(demoText) {
-        languages.set(lang, demoText)
+    } catch(e) {}
+    if(!code) console.error(`Source code for ${lang} not found`);
+    if(!demoText) console.error(`Example code for ${lang} not found`);
+    if(code && demoText) {
+        languages.set(lang, demoText);
+        let aliasLine = code.match(/aliases: ?\[((?:['"][^'"]+['"],? ?)+)]/i);
+        if(aliasLine) {
+            for(let alias of aliasLine[1].replace(/'/g,'').split(/, ?/)) {
+                aliases.set(alias, lang);
+            }
+        }
     }
 }
 
@@ -40,7 +47,7 @@ bot.on('messageCreate', async msg => {
         return sendMessage(msg.channel, `Listing \`${languages.size}\` languages:\n${list}`);
     }
     if(running) return;
-    let match = msg.content && msg.content.match(/!syntax_test ?(.+)?/);
+    let match = msg.content && msg.content.match(/^!syntax_test ?(.+)?/);
     if(match) {
         if(match[1]) {
             let targetLang = aliases.get(match[1]) ||  match[1];

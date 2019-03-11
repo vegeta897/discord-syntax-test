@@ -24,7 +24,7 @@ Finally `npm start`
 
 Powered by [Eris](https://abal.moe/Eris/) and [highlight.js](https://highlightjs.org)
 
-Language list compiled by [Cadence](https://cadence.moe/pastes/143)
+Original language list compiled by [Cadence](https://cadence.moe/pastes/143)
 
 Inspired by Mimee
 
