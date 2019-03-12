@@ -86,15 +86,9 @@ function makeCodeBlock(lang) {
     return `\`${lang}\`\n\`\`\`${lang}\n${demoText}\`\`\``
 }
 
-function sendMessage(channel, msg) { // Allows ignoring errors while using await
-    return new Promise((resolve, reject) => {
-        channel.createMessage(msg).then(res => {
-            resolve(res);
-        }).catch(e => {
-            console.error('Error sending message', e);
-            resolve(e);
-        })
-    });
+function sendMessage(channel, msg) {
+    return channel.createMessage(msg)
+        .catch(console.error);
 }
 
 function sleep(ms) {
